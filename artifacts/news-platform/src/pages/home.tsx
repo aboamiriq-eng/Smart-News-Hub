@@ -9,6 +9,7 @@ import { Clock, Eye, ChevronRight, ChevronLeft } from "lucide-react";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import { proxyImage } from "@/lib/image";
 
 function BreakingTicker({ articles }: { articles: any[] }) {
   const { lang, t } = useTranslation();
@@ -83,7 +84,7 @@ export default function Home() {
                 <div className="aspect-[16/9] relative bg-muted">
                   {heroArticle.imageUrl && (
                     <img 
-                      src={heroArticle.imageUrl} 
+                      src={proxyImage(heroArticle.imageUrl) || ''}
                       alt={heroArticle.imageAlt || heroArticle.title}
                       className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                     />
@@ -113,7 +114,7 @@ export default function Home() {
                   <div className="w-1/3 aspect-video shrink-0 bg-muted rounded-md overflow-hidden">
                     {article.imageUrl && (
                       <img 
-                        src={article.imageUrl} 
+                        src={proxyImage(article.imageUrl) || ''}
                         alt={article.title}
                         className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                       />
@@ -147,13 +148,14 @@ export default function Home() {
                 <Card key={article.id} className="overflow-hidden border-none shadow-none group bg-transparent">
                   <Link href={`/article/${article.slug}`}>
                     <div className="flex gap-4 sm:gap-5">
-                      <div className="w-28 h-24 sm:w-36 sm:h-28 md:w-44 md:h-32 shrink-0 bg-muted rounded-lg overflow-hidden relative">
+                      <div className="w-28 h-24 sm:w-36 sm:h-28 md:w-44 md:h-32 shrink-0 bg-muted rounded-lg overflow-hidden relative flex-none">
                         {article.imageUrl ? (
                           <img
-                            src={article.imageUrl}
+                            src={proxyImage(article.imageUrl) || ''}
                             alt={article.imageAlt || article.title}
-                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-muted">

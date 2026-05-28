@@ -10,7 +10,8 @@ import {
   BarChart, 
   Settings,
   LogOut,
-  Globe
+  Globe,
+  Zap
 } from "lucide-react";
 import { Button } from "./ui/button";
 
@@ -25,6 +26,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     { href: "/admin/sources", icon: Rss, label: t('admin.sources') },
     { href: "/admin/advertisements", icon: Megaphone, label: t('admin.advertisements') },
     { href: "/admin/analytics", icon: BarChart, label: t('admin.analytics') },
+    { href: "/admin/automation", icon: Zap, label: lang === 'ar' ? 'الأتمتة' : 'Automation' },
     { href: "/admin/settings", icon: Settings, label: t('admin.settings') },
   ];
 

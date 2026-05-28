@@ -1,5 +1,6 @@
 import { useTranslation } from "@/hooks/use-translation";
 import { useGetArticleBySlug, useGetRelatedArticles, useTrackArticleView, getGetArticleBySlugQueryKey } from "@workspace/api-client-react";
+import { proxyImage } from "@/lib/image";
 import { Layout } from "@/components/layout";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "wouter";
@@ -128,7 +129,7 @@ export default function ArticleDetail() {
             {article.imageUrl && (
               <div className="mb-8 aspect-video relative rounded-xl overflow-hidden bg-muted">
                 <img 
-                  src={article.imageUrl} 
+                  src={proxyImage(article.imageUrl) || ''}
                   alt={article.imageAlt || article.title}
                   className="w-full h-full object-cover"
                 />
@@ -158,7 +159,7 @@ export default function ArticleDetail() {
                     <div className="w-24 aspect-square shrink-0 bg-muted rounded-md overflow-hidden">
                       {rel.imageUrl && (
                         <img 
-                          src={rel.imageUrl} 
+                          src={proxyImage(rel.imageUrl) || ''}
                           alt={rel.title}
                           className="w-full h-full object-cover transition-transform group-hover:scale-105"
                         />

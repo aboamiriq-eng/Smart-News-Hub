@@ -16,6 +16,7 @@ import AdminSources from "@/pages/admin/sources";
 import AdminAds from "@/pages/admin/advertisements";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminSettings from "@/pages/admin/settings";
+import AdminAutomation from "@/pages/admin/automation";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/admin/advertisements" component={AdminAds} />
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/admin/automation" component={AdminAutomation} />
       <Route component={NotFound} />
     </Switch>
   );

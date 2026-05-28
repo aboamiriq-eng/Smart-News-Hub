@@ -7,6 +7,8 @@ import advertisementsRouter from "./advertisements";
 import analyticsRouter from "./analytics";
 import dashboardRouter from "./dashboard";
 import settingsRouter from "./settings";
+import automationRouter from "./automation";
+import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
 
@@ -18,5 +20,7 @@ router.use(advertisementsRouter);
 router.use(analyticsRouter);
 router.use(dashboardRouter);
 router.use(settingsRouter);
+router.use(automationRouter);
+router.use(proxyRouter);
 
 export default router;

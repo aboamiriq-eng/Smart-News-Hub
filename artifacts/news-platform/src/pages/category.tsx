@@ -1,5 +1,6 @@
 import { useTranslation } from "@/hooks/use-translation";
 import { useListArticles, useListCategories, getListArticlesQueryKey } from "@workspace/api-client-react";
+import { proxyImage } from "@/lib/image";
 import { Layout } from "@/components/layout";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "wouter";
@@ -86,7 +87,7 @@ export default function Category() {
                   <div className="aspect-[16/10] bg-muted rounded-lg overflow-hidden mb-4 relative">
                     {article.imageUrl ? (
                       <img
-                        src={article.imageUrl}
+                        src={proxyImage(article.imageUrl) || ''}
                         alt={article.imageAlt || article.title}
                         className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                       />
