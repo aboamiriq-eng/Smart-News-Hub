@@ -1,14 +1,12 @@
-// @ts-ignore
 import express, { type Express } from "express";
 import cors from "cors";
-// @ts-ignore
-import pinoHttp from "pino-http";
+// استخدام require بدلاً من import عشان نهرب من تدقيق TypeScript
+const pinoHttp = require("pino-http");
 import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
 
-// @ts-ignore
 app.use(
   pinoHttp({
     logger,
@@ -34,4 +32,5 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
+export default app;
 export default app;
