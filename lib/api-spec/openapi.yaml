@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Smart Bilingual News Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: articles
+    description: News articles management
+  - name: categories
+    description: Category management
+  - name: sources
+    description: News sources
+  - name: advertisements
+    description: Ads management
+  - name: analytics
+    description: Analytics and statistics
+  - name: settings
+    description: Site settings
+  - name: dashboard
+    description: Dashboard summary data
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,595 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /articles:
+    get:
+      operationId: listArticles
+      tags: [articles]
+      summary: List articles with filtering
+      parameters:
+        - name: lang
+          in: query
+          schema:
+            type: string
+            enum: [ar, en]
+        - name: categoryId
+          in: query
+          schema:
+            type: ["integer", "null"]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [published, draft, scheduled]
+        - name: featured
+          in: query
+          schema:
+            type: ["boolean", "null"]
+        - name: search
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Paginated articles list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ArticleList"
+    post:
+      operationId: createArticle
+      tags: [articles]
+      summary: Create new article
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+
+  /articles/trending:
+    get:
+      operationId: getTrendingArticles
+      tags: [articles]
+      summary: Get trending articles by views
+      parameters:
+        - name: lang
+          in: query
+          schema:
+            type: ["string", "null"]
+            enum: [ar, en, null]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Trending articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Article"
+
+  /articles/featured:
+    get:
+      operationId: getFeaturedArticles
+      tags: [articles]
+      summary: Get featured/breaking news articles
+      parameters:
+        - name: lang
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Featured articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Article"
+
+  /articles/sitemap:
+    get:
+      operationId: getArticlesSitemap
+      tags: [articles]
+      summary: Get articles list for sitemap generation
+      responses:
+        "200":
+          description: Sitemap data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SitemapEntry"
+
+  /articles/{id}:
+    get:
+      operationId: getArticle
+      tags: [articles]
+      summary: Get article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Article found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateArticle
+      tags: [articles]
+      summary: Update article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+    delete:
+      operationId: deleteArticle
+      tags: [articles]
+      summary: Delete article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /articles/{id}/view:
+    post:
+      operationId: trackArticleView
+      tags: [articles]
+      summary: Track article view for analytics
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: View tracked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ViewCount"
+
+  /articles/{id}/related:
+    get:
+      operationId: getRelatedArticles
+      tags: [articles]
+      summary: Get related articles for internal linking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Related articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Article"
+
+  /articles/slug/{slug}:
+    get:
+      operationId: getArticleBySlug
+      tags: [articles]
+      summary: Get article by SEO-friendly slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Article found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "404":
+          description: Not found
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      parameters:
+        - name: lang
+          in: query
+          schema:
+            type: ["string", "null"]
+      responses:
+        "200":
+          description: Categories list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      summary: Create new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      summary: Update category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      summary: Delete category
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /sources:
+    get:
+      operationId: listSources
+      tags: [sources]
+      summary: List news sources
+      responses:
+        "200":
+          description: Sources list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewsSource"
+    post:
+      operationId: createSource
+      tags: [sources]
+      summary: Add news source
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsSourceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsSource"
+
+  /sources/{id}:
+    patch:
+      operationId: updateSource
+      tags: [sources]
+      summary: Update source
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsSourceUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsSource"
+    delete:
+      operationId: deleteSource
+      tags: [sources]
+      summary: Delete source
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /sources/{id}/fetch:
+    post:
+      operationId: fetchFromSource
+      tags: [sources]
+      summary: Manually trigger fetch from a source
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Fetch result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FetchResult"
+
+  /advertisements:
+    get:
+      operationId: listAdvertisements
+      tags: [advertisements]
+      summary: List advertisements
+      parameters:
+        - name: position
+          in: query
+          schema:
+            type: ["string", "null"]
+        - name: active
+          in: query
+          schema:
+            type: ["boolean", "null"]
+      responses:
+        "200":
+          description: Ads list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Advertisement"
+    post:
+      operationId: createAdvertisement
+      tags: [advertisements]
+      summary: Create advertisement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdvertisementInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advertisement"
+
+  /advertisements/{id}:
+    patch:
+      operationId: updateAdvertisement
+      tags: [advertisements]
+      summary: Update advertisement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdvertisementUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Advertisement"
+    delete:
+      operationId: deleteAdvertisement
+      tags: [advertisements]
+      summary: Delete advertisement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /analytics/stats:
+    get:
+      operationId: getAnalyticsStats
+      tags: [analytics]
+      summary: Get overall analytics statistics
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [today, week, month]
+            default: today
+      responses:
+        "200":
+          description: Analytics stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsStats"
+
+  /analytics/top-articles:
+    get:
+      operationId: getTopArticles
+      tags: [analytics]
+      summary: Get top performing articles for SEO analysis
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [today, week, month]
+            default: week
+      responses:
+        "200":
+          description: Top articles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArticleAnalytics"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary with key metrics
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/live-visitors:
+    get:
+      operationId: getLiveVisitors
+      tags: [dashboard]
+      summary: Get current live visitor count
+      responses:
+        "200":
+          description: Live visitor count
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LiveVisitors"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get site settings
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+    patch:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update site settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +632,570 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    Article:
+      type: object
+      required: [id, title, slug, lang, status, viewCount, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        summary:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        imageAlt:
+          type: ["string", "null"]
+        lang:
+          type: string
+          enum: [ar, en]
+        status:
+          type: string
+          enum: [published, draft, scheduled]
+        featured:
+          type: boolean
+        breaking:
+          type: boolean
+        categoryId:
+          type: ["integer", "null"]
+        categoryName:
+          type: ["string", "null"]
+        sourceId:
+          type: ["integer", "null"]
+        sourceName:
+          type: ["string", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        metaTitle:
+          type: ["string", "null"]
+        metaDescription:
+          type: ["string", "null"]
+        keywords:
+          type: array
+          items:
+            type: string
+        viewCount:
+          type: integer
+        readTime:
+          type: ["integer", "null"]
+        publishedAt:
+          type: ["string", "null"]
+        scheduledAt:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    ArticleInput:
+      type: object
+      required: [title, lang]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        slug:
+          type: ["string", "null"]
+        summary:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        imageAlt:
+          type: ["string", "null"]
+        lang:
+          type: string
+          enum: [ar, en]
+        status:
+          type: string
+          enum: [published, draft, scheduled]
+        featured:
+          type: boolean
+        breaking:
+          type: boolean
+        categoryId:
+          type: ["integer", "null"]
+        sourceId:
+          type: ["integer", "null"]
+        tags:
+          type: array
+          items:
+            type: string
+        metaTitle:
+          type: ["string", "null"]
+        metaDescription:
+          type: ["string", "null"]
+        keywords:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: ["string", "null"]
+        scheduledAt:
+          type: ["string", "null"]
+
+    ArticleUpdate:
+      type: object
+      properties:
+        title:
+          type: ["string", "null"]
+        slug:
+          type: ["string", "null"]
+        summary:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        imageAlt:
+          type: ["string", "null"]
+        lang:
+          type: ["string", "null"]
+          enum: [ar, en, null]
+        status:
+          type: ["string", "null"]
+          enum: [published, draft, scheduled, null]
+        featured:
+          type: ["boolean", "null"]
+        breaking:
+          type: ["boolean", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        tags:
+          type: ["array", "null"]
+          items:
+            type: string
+        metaTitle:
+          type: ["string", "null"]
+        metaDescription:
+          type: ["string", "null"]
+        keywords:
+          type: ["array", "null"]
+          items:
+            type: string
+        publishedAt:
+          type: ["string", "null"]
+        scheduledAt:
+          type: ["string", "null"]
+
+    ArticleList:
+      type: object
+      required: [articles, total, page, limit]
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Article"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+        totalPages:
+          type: integer
+
+    Category:
+      type: object
+      required: [id, nameAr, nameEn, slug, articleCount]
+      properties:
+        id:
+          type: integer
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        slug:
+          type: string
+        description:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+        icon:
+          type: ["string", "null"]
+        articleCount:
+          type: integer
+        sortOrder:
+          type: integer
+        active:
+          type: boolean
+
+    CategoryInput:
+      type: object
+      required: [nameAr, nameEn, slug]
+      properties:
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        slug:
+          type: string
+        description:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+        icon:
+          type: ["string", "null"]
+        sortOrder:
+          type: integer
+        active:
+          type: boolean
+
+    CategoryUpdate:
+      type: object
+      properties:
+        nameAr:
+          type: ["string", "null"]
+        nameEn:
+          type: ["string", "null"]
+        slug:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+        icon:
+          type: ["string", "null"]
+        sortOrder:
+          type: ["integer", "null"]
+        active:
+          type: ["boolean", "null"]
+
+    NewsSource:
+      type: object
+      required: [id, name, url, lang, active, articleCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        url:
+          type: string
+        feedUrl:
+          type: ["string", "null"]
+        lang:
+          type: string
+          enum: [ar, en]
+        active:
+          type: boolean
+        categoryId:
+          type: ["integer", "null"]
+        articleCount:
+          type: integer
+        lastFetchedAt:
+          type: ["string", "null"]
+        fetchInterval:
+          type: integer
+        reliability:
+          type: integer
+
+    NewsSourceInput:
+      type: object
+      required: [name, url, lang]
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        feedUrl:
+          type: ["string", "null"]
+        lang:
+          type: string
+          enum: [ar, en]
+        active:
+          type: boolean
+        categoryId:
+          type: ["integer", "null"]
+        fetchInterval:
+          type: integer
+
+    NewsSourceUpdate:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        url:
+          type: ["string", "null"]
+        feedUrl:
+          type: ["string", "null"]
+        lang:
+          type: ["string", "null"]
+        active:
+          type: ["boolean", "null"]
+        categoryId:
+          type: ["integer", "null"]
+        fetchInterval:
+          type: ["integer", "null"]
+
+    Advertisement:
+      type: object
+      required: [id, title, position, active]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        position:
+          type: string
+          enum: [header, sidebar, article-top, article-bottom, footer, popup]
+        adType:
+          type: string
+          enum: [image, script, html]
+        content:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        targetUrl:
+          type: ["string", "null"]
+        active:
+          type: boolean
+        lang:
+          type: ["string", "null"]
+          enum: [ar, en, null]
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        impressions:
+          type: integer
+        clicks:
+          type: integer
+
+    AdvertisementInput:
+      type: object
+      required: [title, position, adType, content]
+      properties:
+        title:
+          type: string
+        position:
+          type: string
+          enum: [header, sidebar, article-top, article-bottom, footer, popup]
+        adType:
+          type: string
+          enum: [image, script, html]
+        content:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        targetUrl:
+          type: ["string", "null"]
+        active:
+          type: boolean
+        lang:
+          type: ["string", "null"]
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+
+    AdvertisementUpdate:
+      type: object
+      properties:
+        title:
+          type: ["string", "null"]
+        position:
+          type: ["string", "null"]
+        adType:
+          type: ["string", "null"]
+        content:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        targetUrl:
+          type: ["string", "null"]
+        active:
+          type: ["boolean", "null"]
+        lang:
+          type: ["string", "null"]
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+
+    AnalyticsStats:
+      type: object
+      required: [totalViews, uniqueVisitors, articlesPublished, topCategory]
+      properties:
+        totalViews:
+          type: integer
+        uniqueVisitors:
+          type: integer
+        articlesPublished:
+          type: integer
+        topCategory:
+          type: ["string", "null"]
+        arViews:
+          type: integer
+        enViews:
+          type: integer
+        avgReadTime:
+          type: number
+        bounceRate:
+          type: number
+
+    ArticleAnalytics:
+      type: object
+      required: [id, title, viewCount, lang]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        viewCount:
+          type: integer
+        lang:
+          type: string
+        categoryName:
+          type: ["string", "null"]
+        publishedAt:
+          type: ["string", "null"]
+
+    DashboardSummary:
+      type: object
+      required: [totalArticles, publishedToday, totalViews, activeCategories, activeSources]
+      properties:
+        totalArticles:
+          type: integer
+        publishedToday:
+          type: integer
+        totalViews:
+          type: integer
+        activeCategories:
+          type: integer
+        activeSources:
+          type: integer
+        arArticles:
+          type: integer
+        enArticles:
+          type: integer
+        pendingScheduled:
+          type: integer
+        recentArticles:
+          type: array
+          items:
+            $ref: "#/components/schemas/Article"
+
+    LiveVisitors:
+      type: object
+      required: [count, arCount, enCount]
+      properties:
+        count:
+          type: integer
+        arCount:
+          type: integer
+        enCount:
+          type: integer
+
+    SiteSettings:
+      type: object
+      required: [siteNameAr, siteNameEn, defaultLang]
+      properties:
+        siteNameAr:
+          type: string
+        siteNameEn:
+          type: string
+        defaultLang:
+          type: string
+          enum: [ar, en]
+        logoUrl:
+          type: ["string", "null"]
+        faviconUrl:
+          type: ["string", "null"]
+        descriptionAr:
+          type: ["string", "null"]
+        descriptionEn:
+          type: ["string", "null"]
+        seoKeywordsAr:
+          type: ["string", "null"]
+        seoKeywordsEn:
+          type: ["string", "null"]
+        googleAnalyticsId:
+          type: ["string", "null"]
+        twitterHandle:
+          type: ["string", "null"]
+        facebookUrl:
+          type: ["string", "null"]
+        articlesPerPage:
+          type: integer
+        autoFetchEnabled:
+          type: boolean
+        pruneAfterDays:
+          type: integer
+
+    SiteSettingsUpdate:
+      type: object
+      properties:
+        siteNameAr:
+          type: ["string", "null"]
+        siteNameEn:
+          type: ["string", "null"]
+        defaultLang:
+          type: ["string", "null"]
+        logoUrl:
+          type: ["string", "null"]
+        faviconUrl:
+          type: ["string", "null"]
+        descriptionAr:
+          type: ["string", "null"]
+        descriptionEn:
+          type: ["string", "null"]
+        seoKeywordsAr:
+          type: ["string", "null"]
+        seoKeywordsEn:
+          type: ["string", "null"]
+        googleAnalyticsId:
+          type: ["string", "null"]
+        twitterHandle:
+          type: ["string", "null"]
+        facebookUrl:
+          type: ["string", "null"]
+        articlesPerPage:
+          type: ["integer", "null"]
+        autoFetchEnabled:
+          type: ["boolean", "null"]
+        pruneAfterDays:
+          type: ["integer", "null"]
+
+    SitemapEntry:
+      type: object
+      required: [slug, updatedAt, lang]
+      properties:
+        slug:
+          type: string
+        title:
+          type: string
+        updatedAt:
+          type: string
+        lang:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+
+    ViewCount:
+      type: object
+      required: [viewCount]
+      properties:
+        viewCount:
+          type: integer
+
+    FetchResult:
+      type: object
+      required: [success, articlesAdded]
+      properties:
+        success:
+          type: boolean
+        articlesAdded:
+          type: integer
+        message:
+          type: ["string", "null"]
