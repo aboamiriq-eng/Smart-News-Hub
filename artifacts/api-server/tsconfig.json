@@ -1,6 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "skipLibCheck": true,
+"noImplicitAny": false,
+"strict": false,
     "outDir": "dist",
     "rootDir": "src",
     "types": ["node"]
