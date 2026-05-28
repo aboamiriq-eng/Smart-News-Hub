@@ -58,7 +58,7 @@ export default function Home() {
   const { lang, t } = useTranslation();
   
   const { data: featured } = useGetFeaturedArticles({ lang });
-  const { data: latest } = useListArticles({ lang, limit: 12 });
+  const { data: latest } = useListArticles({ lang, limit: 12, status: "published" as const });
   const { data: trending } = useGetTrendingArticles({ lang, limit: 5 });
 
   const breakingArticles = featured?.filter(a => a.breaking) || [];
