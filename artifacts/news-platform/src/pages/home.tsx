@@ -142,42 +142,51 @@ export default function Home() {
             <div className="flex items-center justify-between border-b pb-4">
               <h2 className="text-2xl font-bold font-serif">{lang === 'ar' ? 'أحدث الأخبار' : 'Latest News'}</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               {latest?.articles?.map((article) => (
                 <Card key={article.id} className="overflow-hidden border-none shadow-none group bg-transparent">
                   <Link href={`/article/${article.slug}`}>
-                    <div className="aspect-[16/10] bg-muted rounded-lg overflow-hidden mb-4 relative">
-                      {article.imageUrl && (
-                        <img 
-                          src={article.imageUrl} 
-                          alt={article.title}
-                          className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-                        />
-                      )}
-                      {article.categoryName && (
-                        <Badge className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm text-foreground hover:bg-background/90 rounded-sm">
-                          {article.categoryName}
-                        </Badge>
-                      )}
-                    </div>
-                    <CardContent className="p-0">
-                      <h3 className="text-lg font-bold font-serif mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                        {article.title}
-                      </h3>
-                      <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
-                        {article.summary}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {article.publishedAt && format(new Date(article.publishedAt), 'MMM d')}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-3 h-3" />
-                          {article.viewCount}
-                        </span>
+                    <div className="flex gap-4 sm:gap-5">
+                      <div className="w-28 h-24 sm:w-36 sm:h-28 md:w-44 md:h-32 shrink-0 bg-muted rounded-lg overflow-hidden relative">
+                        {article.imageUrl ? (
+                          <img
+                            src={article.imageUrl}
+                            alt={article.imageAlt || article.title}
+                            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                            <Eye className="w-6 h-6 text-muted-foreground/30" />
+                          </div>
+                        )}
                       </div>
-                    </CardContent>
+                      <CardContent className="p-0 flex-1 flex flex-col justify-between py-1">
+                        <div>
+                          {article.categoryName && (
+                            <Badge className="mb-2 text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none rounded-sm">
+                              {article.categoryName}
+                            </Badge>
+                          )}
+                          <h3 className="text-base sm:text-lg font-bold font-serif line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                            {article.title}
+                          </h3>
+                          <p className="text-muted-foreground text-sm line-clamp-1 mt-1 hidden sm:block">
+                            {article.summary}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-2">
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {article.publishedAt && format(new Date(article.publishedAt), lang === 'ar' ? 'dd MMM' : 'MMM d')}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {article.viewCount?.toLocaleString()}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </div>
                   </Link>
                 </Card>
               ))}
