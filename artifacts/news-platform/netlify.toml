@@ -1,0 +1,3 @@
+[build]
+  command = "pnpm --filter @workspace/news-platform... run build"
+  publish = "dist/public"
